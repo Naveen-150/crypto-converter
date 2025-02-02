@@ -76,9 +76,24 @@ To enable CI/CD, add the following **GitHub Secrets**:
 - `DOCKER_PASSWORD` – Your Docker Hub password.
 - `AKASH_WALLET` – Your Akash wallet address.
 - `AKASH_KEY` – Your Akash wallet private key.
-
+## Testing CI/CD Automation
+Make a small change (e.g., update README.md or a small CSS change).
+Push the change to GitHub:
+sh
+    Copy
+    Edit
+    git add .
+    git commit -m "Testing CI/CD automation"
+    git push origin main
+##Go to GitHub Actions in your repo:
+Navigate to GitHub → Your Repo → Actions
+You should see the deployment workflow running.
 ## Demo Video
-_A demo video showcasing the app will be added soon._
+
+🎥 Watch the demo video of the Crypto Converter Web App:
+
+[![Watch the video]: https://youtu.be/nl-C1sNy0Zs
+Or download it directly: 👉 [Download Demo Video]https://github.com/Naveen-150/crypto-converter/releases/download/v1.0/demo.mp4
 
 ## Contributing
 Contributions are welcome! Feel free to submit issues or pull requests.
