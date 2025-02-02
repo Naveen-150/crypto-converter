@@ -93,7 +93,8 @@ You should see the deployment workflow running.
  Watch the demo video of the Crypto Converter Web App:
 
 [![Watch the video]: https://youtu.be/nl-C1sNy0Zs
-Or download it directly: 👉 [Download Demo Video]https://github.com/Naveen-150/crypto-converter/releases/download/v1.0/demo.mp4
+Or download it directly: 
+👉 [Download Demo Video]https://github.com/Naveen-150/crypto-converter/releases/download/v1.0/demo.mp4
 
 ## Contributing
 Contributions are welcome! Feel free to submit issues or pull requests.
