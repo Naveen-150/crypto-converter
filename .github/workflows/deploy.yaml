@@ -27,21 +27,25 @@ jobs:
           docker build -t bala150/crypto-converter:latest .
           docker push bala150/crypto-converter:latest
 
-      - name: Install Akash CLI  # 🚀 Fix: Add this step
+      - name: Install Akash CLI  # ✅ Fix: Ensure correct installation
         run: |
           curl -sSL https://raw.githubusercontent.com/ovrclk/akash/master/install.sh | bash
           echo "$HOME/.akash/bin" >> $GITHUB_PATH
+          export PATH=$HOME/.akash/bin:$PATH
+          akash version  # Verify installation
 
-      - name: Import Akash Wallet  # ✅ Fix: Add wallet recovery step
+      - name: Import Akash Wallet  # ✅ Fix: Ensure CLI is available in PATH
         env:
           WALLET_KEY: ${{ secrets.AKASH_KEY }}
         run: |
+          export PATH=$HOME/.akash/bin:$PATH
           echo "$WALLET_KEY" | akash keys add mywallet --recover --keyring-backend test
 
-      - name: Deploy to Akash  # ✅ Fix: Proper deployment command
+      - name: Deploy to Akash  # ✅ Fix: Ensure CLI is available before deployment
         env:
           AKASH_KEYRING_BACKEND: test
           AKASH_CHAIN_ID: akashnet-2
           AKASH_NODE: https://rpc.akash.forbole.com:443
         run: |
+          export PATH=$HOME/.akash/bin:$PATH
           akash tx deployment create deploy.yml --from mywallet --node $AKASH_NODE --chain-id $AKASH_CHAIN_ID --yes
