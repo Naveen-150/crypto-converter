@@ -3,7 +3,7 @@ name: Deploy to Akash
 on:
   push:
     branches:
-      - main  # Change to your deployment branch
+      - main  # Adjust to your deployment branch
 
 jobs:
   deploy:
@@ -32,12 +32,16 @@ jobs:
           curl -sSL https://raw.githubusercontent.com/ovrclk/akash/master/install.sh | bash
           echo "$HOME/.akash/bin" >> $GITHUB_PATH
 
-      - name: Deploy to Akash
+      - name: Import Akash Wallet  # ✅ Fix: Add wallet recovery step
+        env:
+          WALLET_KEY: ${{ secrets.AKASH_KEY }}
+        run: |
+          echo "$WALLET_KEY" | akash keys add mywallet --recover --keyring-backend test
+
+      - name: Deploy to Akash  # ✅ Fix: Proper deployment command
         env:
           AKASH_KEYRING_BACKEND: test
           AKASH_CHAIN_ID: akashnet-2
           AKASH_NODE: https://rpc.akash.forbole.com:443
-          WALLET_ADDRESS: ${{ secrets.AKASH_WALLET }}
-          WALLET_KEY: ${{ secrets.AKASH_KEY }}
         run: |
-          akash tx deployment create deploy.yaml --from $WALLET_ADDRESS
+          akash tx deployment create deploy.yml --from mywallet --node $AKASH_NODE --chain-id $AKASH_CHAIN_ID --yes
