@@ -3,7 +3,7 @@ name: Deploy to Akash
 on:
   push:
     branches:
-      - main  # Adjust to your deployment branch
+      - main
 
 jobs:
   deploy:
@@ -30,22 +30,21 @@ jobs:
       - name: Install Akash CLI  # ✅ Fix: Ensure correct installation
         run: |
           curl -sSL https://raw.githubusercontent.com/ovrclk/akash/master/install.sh | bash
-          echo "$HOME/.akash/bin" >> $GITHUB_PATH
-          export PATH=$HOME/.akash/bin:$PATH
+          sudo mv ./bin/akash /usr/local/bin/akash  # Move Akash to a system-wide location
+          chmod +x /usr/local/bin/akash  # Ensure it's executable
+          echo "Akash CLI installed successfully!"
           akash version  # Verify installation
 
-      - name: Import Akash Wallet  # ✅ Fix: Ensure CLI is available in PATH
+      - name: Import Akash Wallet
         env:
           WALLET_KEY: ${{ secrets.AKASH_KEY }}
         run: |
-          export PATH=$HOME/.akash/bin:$PATH
-          echo "$WALLET_KEY" | akash keys add mywallet --recover --keyring-backend test
+          akash keys add mywallet --recover --keyring-backend test <<< "$WALLET_KEY"
 
-      - name: Deploy to Akash  # ✅ Fix: Ensure CLI is available before deployment
+      - name: Deploy to Akash
         env:
           AKASH_KEYRING_BACKEND: test
           AKASH_CHAIN_ID: akashnet-2
           AKASH_NODE: https://rpc.akash.forbole.com:443
         run: |
-          export PATH=$HOME/.akash/bin:$PATH
           akash tx deployment create deploy.yml --from mywallet --node $AKASH_NODE --chain-id $AKASH_CHAIN_ID --yes
