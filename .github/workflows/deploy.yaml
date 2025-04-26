@@ -9,6 +9,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE_NAME: bala150/crypto-converter:latest
+      AKASH_WALLET_NAME: mywallet
+      AKASH_WALLET_MNEMONIC: ${{ secrets.AKASH_WALLET_MNEMONIC }}
+      AKASH_KEYRING_BACKEND: test
+      AKASH_CHAIN_ID: akashnet-2
+      AKASH_NODE: https://rpc.akash.forbole.com:443
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -17,34 +25,32 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t bala150/crypto-converter:latest .
-          docker push bala150/crypto-converter:latest
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
 
-      - name: Install Akash CLI  # ✅ Fix: Ensure correct installation
+      - name: Install Akash CLI
         run: |
-          curl -sSL https://raw.githubusercontent.com/ovrclk/akash/master/install.sh | bash
-          sudo mv ./bin/akash /usr/local/bin/akash  # Move Akash to a system-wide location
-          chmod +x /usr/local/bin/akash  # Ensure it's executable
-          echo "Akash CLI installed successfully!"
-          akash version  # Verify installation
+          curl -LO https://github.com/akash-network/node/releases/download/v0.38.2/akash_0.38.2_Linux_amd64.deb
+          sudo dpkg -i akash_0.38.2_Linux_amd64.deb
+          akash version
 
-      - name: Import Akash Wallet
-        env:
-          WALLET_KEY: ${{ secrets.AKASH_KEY }}
+      - name: Restore Akash Wallet from Mnemonic
         run: |
-          akash keys add mywallet --recover --keyring-backend test <<< "$WALLET_KEY"
+          echo "$AKASH_WALLET_MNEMONIC" | akash keys add "$AKASH_WALLET_NAME" --recover --keyring-backend "$AKASH_KEYRING_BACKEND"
+          akash keys list --keyring-backend "$AKASH_KEYRING_BACKEND"
 
       - name: Deploy to Akash
-        env:
-          AKASH_KEYRING_BACKEND: test
-          AKASH_CHAIN_ID: akashnet-2
-          AKASH_NODE: https://rpc.akash.forbole.com:443
         run: |
-          akash tx deployment create deploy.yml --from mywallet --node $AKASH_NODE --chain-id $AKASH_CHAIN_ID --yes
+          akash tx deployment create deploy.yml \
+            --from $AKASH_WALLET_NAME \
+            --keyring-backend $AKASH_KEYRING_BACKEND \
+            --node $AKASH_NODE \
+            --chain-id $AKASH_CHAIN_ID \
+            --gas-prices 0.025uakt \
+            --gas auto \
+            --gas-adjustment 1.5 \
+            -y
